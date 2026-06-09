@@ -7,7 +7,7 @@ import ticketRoutes from './routes/tickets.js';
 import userRoutes from './routes/users.js';
 import auditRoutes from './routes/audit.js';
 
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 const app = express();
 
