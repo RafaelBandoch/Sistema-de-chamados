@@ -5,22 +5,35 @@ async function runSeed() {
     try {
         console.log('Starting seeder...');
         
-        // Verifica se já existe um admin
-        const [rows] = await pool.query('SELECT * FROM users WHERE role = ?', ['admin']);
-        if (rows.length > 0) {
-            console.log('Admin user already exists. Skipping seed.');
-            return;
+        // O seed continuará e vai falhar com erro de DUPLICATE ENTRY se o email já existir, 
+        // então podemos apenas capturar esse erro específico.
+
+        const defaultPassword = '123'; 
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+        const users = [
+            { name: 'Admin Supremo', email: 'admin@gira.com', role: 'admin' },
+            { name: 'Técnico Especialista', email: 'tecnico@gira.com', role: 'tecnico' },
+            { name: 'Solicitante Comum', email: 'solicitante@gira.com', role: 'solicitante' }
+        ];
+
+        for (const user of users) {
+            try {
+                await pool.query(
+                    'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+                    [user.name, user.email, hashedPassword, user.role]
+                );
+                console.log(`User created: ${user.email} (Role: ${user.role}) | Password: ${defaultPassword}`);
+            } catch (err) {
+                if (err.code === 'ER_DUP_ENTRY') {
+                    console.log(`User already exists: ${user.email}`);
+                } else {
+                    throw err;
+                }
+            }
         }
 
-        const adminPassword = 'admin'; // Senha padrão (deve ser alterada em produção)
-        const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
-        await pool.query(
-            'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-            ['Administrador do Sistema', 'admin@gira.com', hashedPassword, 'admin']
-        );
-
-        console.log('Admin user seeded successfully. Email: admin@gira.com | Password: admin');
+        console.log('Seeder executado com sucesso.');
     } catch (error) {
         console.error('Error running seed:', error);
     } finally {
