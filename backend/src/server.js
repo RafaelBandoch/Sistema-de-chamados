@@ -6,11 +6,13 @@ import authRoutes from './routes/auth.js';
 import ticketRoutes from './routes/tickets.js';
 import userRoutes from './routes/users.js';
 import auditRoutes from './routes/audit.js';
+import { securityHeaders } from './middlewares/securityHeadersMiddleware.js';
 
 dotenv.config({ path: '../.env' });
 
 const app = express();
 
+app.use(securityHeaders);
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({

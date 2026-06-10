@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT 'outros',
     status ENUM('aberto', 'em andamento', 'aguardando', 'resolvido', 'cancelado') DEFAULT 'aberto',
     requester_id INT NOT NULL,
     assigned_to INT,
@@ -42,3 +43,10 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS token_blacklist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(512) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

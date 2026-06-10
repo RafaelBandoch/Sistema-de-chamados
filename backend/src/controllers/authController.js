@@ -28,7 +28,7 @@ export const login = async (req, res) => {
         const token = jwt.sign(
             { id: user.id, role: user.role, name: user.name },
             process.env.JWT_SECRET,
-            { expiresIn: '8h' }
+            { expiresIn: '1h' }
         );
 
         // Set HttpOnly Cookie
@@ -36,7 +36,7 @@ export const login = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 8 * 60 * 60 * 1000 // 8 hours
+            maxAge: 1 * 60 * 60 * 1000 // 1 hour
         });
 
         // Audit Log
@@ -56,6 +56,16 @@ export const logout = async (req, res) => {
     // Audit Log
     await logAudit(req.user.id, 'logout', 'Usuário efetuou logout do sistema.', req.ip);
     
+    // Invalida o token inserindo na blacklist
+    const token = req.cookies.jwt;
+    if (token) {
+        try {
+            await pool.query('INSERT IGNORE INTO token_blacklist (token) VALUES (?)', [token]);
+        } catch (error) {
+            console.error('Erro ao inserir na blacklist:', error);
+        }
+    }
+
     res.cookie('jwt', '', {
         httpOnly: true,
         expires: new Date(0)
