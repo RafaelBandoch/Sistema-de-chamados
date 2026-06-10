@@ -1,18 +1,23 @@
 import pool from '../config/db.js';
 import { logAudit } from '../middlewares/auditMiddleware.js';
+import { escapeHtml } from '../utils/sanitize.js';
 
 export const createTicket = async (req, res) => {
-    const { title, description } = req.body;
+    const { title, description, category } = req.body;
     const requesterId = req.user.id;
 
-    if (!title || !description) {
-        return res.status(400).json({ message: 'Título e descrição são obrigatórios.' });
+    if (!title || !description || !category) {
+        return res.status(400).json({ message: 'Título, descrição e categoria são obrigatórios.' });
     }
+
+    const safeTitle = escapeHtml(title);
+    const safeDescription = escapeHtml(description);
+    const safeCategory = escapeHtml(category);
 
     try {
         const [result] = await pool.query(
-            'INSERT INTO tickets (title, description, requester_id) VALUES (?, ?, ?)',
-            [title, description, requesterId]
+            'INSERT INTO tickets (title, description, category, requester_id) VALUES (?, ?, ?, ?)',
+            [safeTitle, safeDescription, safeCategory, requesterId]
         );
 
         const ticketId = result.insertId;
@@ -32,7 +37,7 @@ export const createTicket = async (req, res) => {
 export const getTickets = async (req, res) => {
     try {
         let query = `
-            SELECT t.id, t.title, t.status, t.created_at, 
+            SELECT t.id, t.title, t.category, t.status, t.created_at, 
                    u.name AS requester_name, 
                    a.name AS assigned_name
             FROM tickets t
@@ -210,9 +215,11 @@ export const addObservation = async (req, res) => {
             return res.status(403).json({ message: 'Acesso negado.' });
         }
 
+        const safeComment = escapeHtml(comment);
+
         await pool.query(
             'INSERT INTO ticket_history (ticket_id, user_id, action, comment) VALUES (?, ?, ?, ?)',
-            [ticketId, req.user.id, 'observacao', comment]
+            [ticketId, req.user.id, 'observacao', safeComment]
         );
 
         res.status(201).json({ message: 'Observação adicionada com sucesso.' });
