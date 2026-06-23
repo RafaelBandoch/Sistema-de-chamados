@@ -2,17 +2,17 @@ import pool from '../config/db.js';
 import { logAudit } from '../middlewares/auditMiddleware.js';
 
 export const createTicket = async (req, res) => {
-    const { title, description } = req.body;
+    const { title, description, category } = req.body;
     const requesterId = req.user.id;
 
-    if (!title || !description) {
-        return res.status(400).json({ message: 'Título e descrição são obrigatórios.' });
+    if (!title || !description || !category) {
+        return res.status(400).json({ message: 'Título, descrição e categoria são obrigatórios.' });
     }
 
     try {
         const [result] = await pool.query(
-            'INSERT INTO tickets (title, description, requester_id) VALUES (?, ?, ?)',
-            [title, description, requesterId]
+            'INSERT INTO tickets (title, description, category, requester_id) VALUES (?, ?, ?, ?)',
+            [title, description, category, requesterId]
         );
 
         const ticketId = result.insertId;
@@ -32,7 +32,7 @@ export const createTicket = async (req, res) => {
 export const getTickets = async (req, res) => {
     try {
         let query = `
-            SELECT t.id, t.title, t.status, t.created_at, 
+            SELECT t.id, t.title, t.category, t.status, t.created_at, 
                    u.name AS requester_name, 
                    a.name AS assigned_name
             FROM tickets t
@@ -110,7 +110,7 @@ export const updateTicket = async (req, res) => {
     try {
         const [tickets] = await pool.query('SELECT * FROM tickets WHERE id = ?', [ticketId]);
         if (tickets.length === 0) return res.status(404).json({ message: 'Chamado não encontrado.' });
-        
+
         const ticket = tickets[0];
 
         // Permissões
@@ -127,7 +127,7 @@ export const updateTicket = async (req, res) => {
         if (status && status !== ticket.status) {
             updateFields.push('status = ?');
             params.push(status);
-            
+
             await pool.query(
                 'INSERT INTO ticket_history (ticket_id, user_id, action, comment) VALUES (?, ?, ?, ?)',
                 [ticketId, req.user.id, 'alteracao_status', `Status alterado de ${ticket.status} para ${status}`]
@@ -164,7 +164,7 @@ export const cancelTicket = async (req, res) => {
     try {
         const [tickets] = await pool.query('SELECT * FROM tickets WHERE id = ?', [ticketId]);
         if (tickets.length === 0) return res.status(404).json({ message: 'Chamado não encontrado.' });
-        
+
         const ticket = tickets[0];
 
         if (ticket.requester_id !== req.user.id) {
@@ -176,7 +176,7 @@ export const cancelTicket = async (req, res) => {
         }
 
         await pool.query('UPDATE tickets SET status = ? WHERE id = ?', ['cancelado', ticketId]);
-        
+
         await pool.query(
             'INSERT INTO ticket_history (ticket_id, user_id, action, comment) VALUES (?, ?, ?, ?)',
             [ticketId, req.user.id, 'cancelamento', 'O chamado foi cancelado pelo solicitante.']
