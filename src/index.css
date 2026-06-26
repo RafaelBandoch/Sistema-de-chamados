@@ -186,7 +186,6 @@ input:focus, textarea:focus, select:focus {
   flex: 1;
   margin-left: 260px;
   padding: 2rem;
-  max-width: 1200px;
 }
 
 /* Utils */
@@ -198,3 +197,90 @@ input:focus, textarea:focus, select:focus {
 .mb-4 { margin-bottom: 1rem; }
 .text-muted { color: var(--text-muted); }
 .text-sm { font-size: 0.875rem; }
+
+/* Category Cards */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.category-card {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+
+.category-card:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.category-card.selected {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(67, 56, 202, 0.1));
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.category-icon-wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 50%;
+  color: var(--primary);
+  transition: all 0.3s ease;
+}
+
+.category-card:hover .category-icon-wrapper {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+.category-card.selected .category-icon-wrapper {
+  background: var(--primary);
+  color: white;
+}
+
+.category-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.category-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Animations extra */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.badge-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}

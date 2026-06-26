@@ -2,9 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import TicketCategorySelector, { getCategoryTitle } from '../components/TicketCategorySelector';
 
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
@@ -13,9 +14,11 @@ const Dashboard = () => {
     const [showForm, setShowForm] = useState(false);
     
     // Form state
+    const [category, setCategory] = useState(null);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [formError, setFormError] = useState(null);
 
     const fetchTickets = async () => {
         try {
@@ -34,15 +37,26 @@ const Dashboard = () => {
 
     const handleCreateTicket = async (e) => {
         e.preventDefault();
+        setFormError(null);
+        if (!category) {
+            alert('Por favor, selecione uma categoria primeiro.');
+            return;
+        }
         setSubmitLoading(true);
         try {
-            await api.post('/tickets', { title, description });
+            await api.post('/tickets', { title, description, category });
             setTitle('');
             setDescription('');
+            setCategory(null);
             setShowForm(false);
             fetchTickets(); // Recarrega a lista
         } catch (error) {
-            alert('Erro ao criar chamado.');
+            const data = error.response?.data;
+            if (data?.errors && Array.isArray(data.errors)) {
+                setFormError(data.errors);
+            } else {
+                setFormError(data?.message || 'Erro ao criar chamado.');
+            }
         } finally {
             setSubmitLoading(false);
         }
@@ -53,43 +67,78 @@ const Dashboard = () => {
             <div className="flex-between mb-4">
                 <h2>Meus Chamados</h2>
                 {(user.role === 'solicitante' || user.role === 'admin') && (
-                    <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+                    <button className="btn btn-primary" onClick={() => { setShowForm(!showForm); setCategory(null); setFormError(null); }}>
                         <PlusCircle size={20} /> Novo Chamado
                     </button>
                 )}
             </div>
 
             {showForm && (
-                <div className="glass-panel animate-fade-in mb-4" style={{ padding: '1.5rem' }}>
-                    <h3>Abrir Novo Chamado</h3>
-                    <form onSubmit={handleCreateTicket} className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div>
-                            <label className="text-sm text-muted mb-4" style={{ display: 'block', marginBottom: '0.5rem' }}>Título do Problema</label>
-                            <input 
-                                type="text" 
-                                value={title} 
-                                onChange={(e) => setTitle(e.target.value)} 
-                                placeholder="Ex: Ar condicionado vazando na sala 3"
-                                required 
-                            />
+                <div className="animate-fade-in mb-4">
+                    <h3 className="mb-4">1. Qual o assunto do seu chamado?</h3>
+                    <TicketCategorySelector 
+                        selectedCategory={category} 
+                        onSelect={(cat) => setCategory(cat)} 
+                    />
+
+                    {category && (
+                        <div className="glass-panel animate-slide-up" style={{ padding: '1.5rem', marginTop: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                                <h3>2. Detalhes do Chamado</h3>
+                                <span className="badge-category">{getCategoryTitle(category)}</span>
+                            </div>
+                            
+                            <form onSubmit={handleCreateTicket} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {formError && (
+                                    <div className="animate-fade-in" style={{ padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+                                            <AlertCircle size={18} />
+                                            <span>Não foi possível abrir o chamado:</span>
+                                        </div>
+                                        {Array.isArray(formError) ? (
+                                            <ul style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                                                {formError.map((err, idx) => (
+                                                    <li key={idx}>{err}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <span>{formError}</span>
+                                        )}
+                                    </div>
+                                )}
+                                <div>
+                                    <label className="text-sm text-muted" style={{ display: 'block', marginBottom: '0.5rem' }}>Título do Problema (mínimo de 5 caracteres)</label>
+                                    <input 
+                                        type="text" 
+                                        value={title} 
+                                        onChange={(e) => setTitle(e.target.value)} 
+                                        placeholder="Ex: Sistema lento ao gerar relatórios"
+                                        required 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm text-muted" style={{ display: 'block', marginBottom: '0.5rem' }}>Descrição Detalhada (mínimo de 10 caracteres)</label>
+                                    <textarea 
+                                        value={description} 
+                                        onChange={(e) => setDescription(e.target.value)} 
+                                        rows="4"
+                                        placeholder="Descreva o problema com o máximo de detalhes possível para facilitar o atendimento..."
+                                        required 
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                                    <button type="button" className="btn btn-secondary" onClick={() => {
+                                        setShowForm(false);
+                                        setCategory(null);
+                                        setFormError(null);
+                                    }}>Cancelar</button>
+                                    <button type="submit" className="btn btn-primary" disabled={submitLoading}>
+                                        {submitLoading ? 'Enviando...' : 'Abrir Chamado'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <div>
-                            <label className="text-sm text-muted mb-4" style={{ display: 'block', marginBottom: '0.5rem' }}>Descrição Detalhada</label>
-                            <textarea 
-                                value={description} 
-                                onChange={(e) => setDescription(e.target.value)} 
-                                rows="4"
-                                placeholder="Descreva o problema com o máximo de detalhes possível..."
-                                required 
-                            />
-                        </div>
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                            <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancelar</button>
-                            <button type="submit" className="btn btn-primary" disabled={submitLoading}>
-                                {submitLoading ? 'Enviando...' : 'Criar Chamado'}
-                            </button>
-                        </div>
-                    </form>
+                    )}
                 </div>
             )}
 
@@ -105,7 +154,8 @@ const Dashboard = () => {
                         <thead style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
                             <tr>
                                 <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>ID</th>
-                                <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>Título</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>Assunto</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>Categoria</th>
                                 <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>Status</th>
                                 {user.role !== 'solicitante' && <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>Solicitante</th>}
                                 <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>Técnico</th>
@@ -118,6 +168,9 @@ const Dashboard = () => {
                                 <tr key={ticket.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                     <td style={{ padding: '1rem' }}>#{ticket.id}</td>
                                     <td style={{ padding: '1rem', fontWeight: 500 }}>{ticket.title}</td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <span className="badge-category">{getCategoryTitle(ticket.category)}</span>
+                                    </td>
                                     <td style={{ padding: '1rem' }}>
                                         <span className={`status-badge status-${ticket.status.replace(' ', '-')}`}>
                                             {ticket.status}
