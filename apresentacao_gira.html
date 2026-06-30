@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIRA: Defesa de Segurança da Informação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Franklin:wght@700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    /* === VIEWPORT E TIPOGRAFIA === */
+    html,
+    body {
+      height: 100%;
+      overflow-x: hidden;
+      margin: 0;
+    }
+
+    :root {
+      --title-size: clamp(1.6rem, 3.5vw, 2.8rem);
+      --h2-size: clamp(1.3rem, 2.8vw, 2rem);
+      --body-size: clamp(0.9rem, 1.4vw, 1.1rem);
+      --small-size: clamp(0.7rem, 1.1vw, 0.9rem);
+      --slide-padding: clamp(1.2rem, 4vw, 3rem);
+      --gap: clamp(0.4rem, 1.2vw, 1rem);
+
+      --bg: #ffffff;
+      --bg-alt: #f8f9fa;
+      --text-main: #212529;
+      --text-muted: #6c757d;
+      --border: #dee2e6;
+      --primary: #9b2226;
+      --primary-light: #ae2012;
+      --code-bg: #1e1e1e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Libre Franklin', system-ui, sans-serif;
+      color: var(--text-main);
+      background: var(--bg);
+      line-height: 1.4;
+    }
+
+    /* === SLIDES === */
+    .deck {
+      position: relative;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--slide-padding);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease-out;
+      background: var(--bg);
+      will-change: opacity, visibility;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .inner {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-bottom: 2rem;
+    }
+
+    /* === HEADINGS === */
+    .eyebrow {
+      font-size: var(--small-size);
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin: 0 0 var(--gap) 0;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 3px;
+      background: var(--primary);
+      display: block;
+    }
+
+    h1.title {
+      font-size: var(--title-size);
+      line-height: 1.1;
+      font-weight: 800;
+      margin: 0 0 var(--gap) 0;
+      color: var(--primary);
+    }
+
+    h2.slide-title {
+      font-size: var(--h2-size);
+      line-height: 1.2;
+      font-weight: 700;
+      margin: 0 0 calc(var(--gap) * 1) 0;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.3rem;
+    }
+
+    /* === LISTS & GRIDS === */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 800px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .info-item {
+      background: var(--bg-alt);
+      padding: 1rem;
+      border-left: 4px solid var(--primary);
+      border-radius: 4px;
+    }
+
+    .info-item h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: var(--body-size);
+      color: var(--primary);
+    }
+
+    .info-item p {
+      margin: 0;
+      font-size: calc(var(--body-size) * 0.95);
+    }
+
+    /* === THE PROFESSOR'S CHECKLIST GRID === */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+
+    .cl-row {
+      display: flex;
+      align-items: flex-start;
+      background: var(--bg-alt);
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .cl-title {
+      flex: 0 0 200px;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: var(--body-size);
+    }
+
+    .cl-content {
+      flex: 1;
+      font-size: calc(var(--body-size) * 0.95);
+      margin: 0;
+    }
+
+    .cl-content code {
+      background: #e9ecef;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    /* === CODE BLOCKS === */
+    pre.code-block {
+      background: var(--code-bg);
+      color: #d4d4d4;
+      padding: 1rem 1.2rem;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: clamp(0.7rem, 1vw, 0.9rem);
+      line-height: 1.4;
+      overflow-x: auto;
+      margin: 1rem 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    pre.code-block code {
+      font-family: inherit;
+    }
+
+    .highlight {
+      color: #569cd6;
+    }
+
+    .string {
+      color: #ce9178;
+    }
+
+    .keyword {
+      color: #c586c0;
+    }
+
+    .comment {
+      color: #6a9955;
+      font-style: italic;
+    }
+
+    /* === BULLET POINTS === */
+    ul.points {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    ul.points li {
+      position: relative;
+      padding-left: 1.5rem;
+      font-size: var(--body-size);
+    }
+
+    ul.points li::before {
+      content: "►";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--primary);
+      font-size: 0.8em;
+    }
+
+    ul.points li ul {
+      margin-top: 0.4rem;
+      padding-left: 1.5rem;
+      list-style-type: circle;
+    }
+
+    ul.points li ul li {
+      padding-left: 0;
+      margin-bottom: 0.3rem;
+    }
+
+    ul.points li ul li::before {
+      display: none;
+    }
+
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: #fdf2f2;
+      padding: 0.8rem 1rem;
+      font-size: var(--body-size);
+      margin-top: 1rem;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* === FOOTER === */
+    .foot {
+      position: fixed;
+      left: var(--slide-padding);
+      right: var(--slide-padding);
+      bottom: clamp(.5rem, 2vh, 1rem);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: var(--small-size);
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 0.5rem;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    #progress-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--bg-alt);
+      z-index: 50;
+    }
+
+    #progress {
+      height: 100%;
+      width: 0;
+      background: var(--primary);
+      transition: width .3s ease;
+    }
+
+    /* === COVER === */
+    .cover {
+      text-align: left;
+    }
+
+    .cover .subtitle {
+      font-size: var(--h2-size);
+      font-weight: 500;
+      margin: 0 0 2rem 0;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="progress-wrap">
+    <div id="progress"></div>
+  </div>
+  <div class="deck" id="deck">
+    <div class="slide active">
+
+      <div class="inner cover">
+        <p class="eyebrow">Defesa de Segurança da Informação</p>
+        <h1 class="title">Sistema GIRA</h1>
+        <p class="subtitle">Gestão de Chamados com Segurança Integrada</p>
+
+        <div class="info-grid" style="margin-top: 3rem;">
+          <div class="info-item">
+            <h3>Equipe</h3>
+            <p>Anttonio Osório Molinaro Maccagnini, Gabriel Lengert Guedes, João Pedro Alves de Lima, João Vitor
+              Paranhos e Rafael Alexandre Alves Bandoch</p>
+          </div>
+          <div class="info-item">
+            <h3>Professor & Disciplina</h3>
+            <p>Prof. Edson Vaz Lopes<br>Segurança da Informação</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Visão Geral</p>
+        <h2 class="slide-title">Ativos Críticos e Arquitetura</h2>
+        <ul class="points">
+          <li><strong>Nossa Stack:</strong> Node.js e Express (Backend), React (Frontend), MySQL (Banco de Dados).
+            <ul>
+              <li><em>Arquivos vitais:</em> <code>backend/server.js</code>, <code>backend/config/db.js</code>,
+                <code>frontend/</code>
+              </li>
+            </ul>
+          </li>
+          <li><strong>Ativos Mapeados (<code>database/schema.sql</code>):</strong>
+            <ul>
+              <li><strong>Senhas:</strong> tabela <code>users</code> → coluna <code>password_hash</code></li>
+              <li><strong>Dados pessoais:</strong> tabela <code>users</code></li>
+              <li><strong>Histórico de chamados:</strong> tabelas <code>tickets</code> e <code>ticket_history</code>
+              </li>
+              <li><strong>Auditoria:</strong> tabela <code>audit_logs</code></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+    </div>
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Pilar 1</p>
+        <h2 class="slide-title">Autenticação e Gestão de Sessão</h2>
+        <div class="checklist-grid">
+          <div class="cl-row">
+            <div class="cl-title">1. Ativo Crítico</div>
+            <div class="cl-content">Senhas dos usuários (hash) e tokens JWT.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">2. Risco Principal</div>
+            <div class="cl-content">Vazamento expondo senhas fracas; sequestro de sessão.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">3. Controle Adotado</div>
+            <div class="cl-content"><code>bcrypt</code> (cost 10) e tokens JWT em cookies <code>httpOnly</code>.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">4. Evidência no Código</div>
+            <div class="cl-content"><code>user.controller.js</code> (bcrypt) e <code>auth.controller.js</code> (cookie).
+            </div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">5. Logs Necessários</div>
+            <div class="cl-content">Log de login efetuado (falhas de login ainda não são logadas).</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">6. Vulnerabilidade</div>
+            <div class="cl-content">JWT_SECRET no `.env` é fraco. Logout não revoga o token de fato.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">7. Incidente (Ação)</div>
+            <div class="cl-content">Desativar conta suspeita e invalidar token (Blacklist).</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">8. Recuperação</div>
+            <div class="cl-content">Forçar redefinição de senhas afetadas e restaurar via backup.</div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+    </div>
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Evidência: Pilar 1</p>
+        <h2 class="slide-title">Hash de Senha e a Prova no Banco</h2>
+        <div class="info-grid" style="grid-template-columns: 1fr 1fr; align-items: start; gap: 2rem;">
+
+          <div>
+            <p class="lead" style="margin-bottom: 0.5rem;"><strong>A Lógica (bcrypt)</strong></p>
+            <pre class="code-block"
+              style="margin-top:0;"><code><span class="keyword">const</span> hash = <span class="keyword">await</span> bcrypt.hash(pwd, <span class="highlight">10</span>);</code></pre>
+            <ul class="points" style="margin-top: 1rem;">
+              <li>Senha nunca salva em texto puro.</li>
+              <li>Cost Factor 10 (mitiga força bruta).</li>
+            </ul>
+          </div>
+
+          <div>
+            <p class="lead" style="margin-bottom: 0.5rem;"><strong>A Prova (Banco de Dados)</strong></p>
+            <img decoding="async" loading="eager" src="assets/db_hash.png" alt="Hash no banco de dados"
+              style="width: 100%; border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); border: 2px solid var(--border); margin-bottom: 1rem;" />
+            <ul class="points" style="margin-top: 1rem;">
+              <li><span style="color:var(--primary); font-weight: bold;">$2b$</span> indica bcrypt.</li>
+              <li><span style="color:var(--primary); font-weight: bold;">$10$</span> prova o fator de custo.</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+    </div>
+
+
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Evidência: Pilar 1</p>
+        <h2 class="slide-title">Validação de Senha Forte</h2>
+        <p class="lead"><strong>Arquivo:</strong> <code>validators/index.js</code></p>
+        <pre class="code-block" style="margin-top: 1rem;"><code><span class="keyword">export const</span> createUserSchema = z.object({
+  password: z.string()
+    .min(<span class="highlight">8</span>, <span class="string">'Mínimo de 8 caracteres'</span>)
+    .regex(<span class="string">/[A-Z]/</span>, <span class="string">'Pelo menos uma letra maiúscula'</span>)
+    .regex(<span class="string">/[a-z]/</span>, <span class="string">'Pelo menos uma minúscula'</span>)
+    .regex(<span class="string">/[0-9]/</span>, <span class="string">'Pelo menos um número'</span>)
+    .regex(<span class="string">/[\W_]/</span>, <span class="string">'Pelo menos um caractere especial'</span>)
+});</code></pre>
+        <ul class="points">
+          <li>Rejeitamos requisições fracas antes de chegar ao banco.</li>
+          <li><strong>Regras exigidas pelo backend:</strong>
+            <ul>
+              <li>Mínimo de 8 caracteres</li>
+              <li>Pelo menos uma letra maiúscula e uma minúscula</li>
+              <li>Pelo menos um número e um caractere especial</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+    </div>
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Evidência: Pilar 1</p>
+        <h2 class="slide-title">Sessão: JWT e Cookie HttpOnly</h2>
+        <p class="lead"><strong>Arquivo:</strong> <code>controllers/authController.js</code></p>
+        <pre class="code-block" style="margin-top: 1rem; margin-bottom: 1rem;"><code><span class="comment">// 1. Assinatura do Token</span>
+<span class="keyword">const</span> token = jwt.sign(
+  { id: user.id, role: user.role, name: user.name },
+  process.env.JWT_SECRET,
+  { expiresIn: <span class="string">'1h'</span> }
+);
+
+<span class="comment">// 2. Envio via Cookie com blindagem</span>
+res.cookie(<span class="string">'jwt'</span>, token, {
+  httpOnly: <span class="keyword">true</span>,                                 <span class="comment">// 👈 Impede roubo via JavaScript</span>
+  secure: process.env.NODE_ENV === <span class="string">'production'</span>,  <span class="comment">// Requer HTTPS</span>
+  sameSite: <span class="string">'lax'</span>,
+  maxAge: <span class="highlight">1</span> * <span class="highlight">60</span> * <span class="highlight">60</span> * <span class="highlight">1000</span>
+});</code></pre>
+        <div class="info-grid">
+          <div class="info-item">
+            <h3>Token JWT (jwt.sign)</h3>
+            <p>O Payload contém apenas dados seguros (id, role, nome). Expira rigorosamente em <strong>1 hora</strong>.
+            </p>
+          </div>
+          <div class="info-item">
+            <h3>Cookie de Segurança</h3>
+            <p>Utilizamos atributos <code>httpOnly</code> (protege do JavaScript) e <code>sameSite=lax</code> (protege
+              de Cross-Site).</p>
+          </div>
+        </div>
+        <div class="callout"><strong>Limitação Local:</strong> O atributo <code>secure</code> (apenas HTTPS) só é
+          ativado em produção. Como o ambiente local roda HTTP, o cookie secure fica desabilitado intencionalmente.
+        </div>
+      </div>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+    </div>
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Evidência: Pilar 1</p>
+        <h2 class="slide-title">Revogação: Logout e Blacklist</h2>
+        <pre class="code-block" style="margin-top: 1rem; margin-bottom: 1rem;"><code><span class="keyword">export const</span> logout = <span class="keyword">async</span> (req, res) => {
+  <span class="comment">// 1. Registra a saída na trilha de auditoria</span>
+  <span class="keyword">await</span> logAudit(req.user.id, <span class="string">'logout'</span>, <span class="string">'Usuário efetuou logout.'</span>, req.ip);
+  
+  <span class="comment">// 2. Invalida o token inserindo na blacklist</span>
+  <span class="keyword">const</span> token = req.cookies.jwt;
+  <span class="keyword">if</span> (token) {
+    <span class="keyword">await</span> pool.query(<span class="string">'INSERT INTO token_blacklist (token) VALUES (?)'</span>, [token]);
+  }
+
+  <span class="comment">// 3. Remove o cookie do navegador</span>
+  res.clearCookie(<span class="string">'jwt'</span>);
+  res.json({ message: <span class="string">'Logout efetuado com sucesso.'</span> });
+};</code></pre>
+        <pre class="code-block" style="margin-top: 1rem; margin-bottom: 1rem;"><code><span class="keyword">export const</span> logout = <span class="keyword">async</span> (req, res) => {
+  <span class="comment">// 1. Registra a saída na trilha de auditoria</span>
+  <span class="keyword">await</span> logAudit(req.user.id, <span class="string">'logout'</span>, <span class="string">'Usuário efetuou logout.'</span>, req.ip);
+  
+  <span class="comment">// 2. Invalida o token inserindo na blacklist</span>
+  <span class="keyword">const</span> token = req.cookies.jwt;
+  <span class="keyword">if</span> (token) {
+    <span class="keyword">await</span> pool.query(<span class="string">'INSERT INTO token_blacklist (token) VALUES (?)'</span>, [token]);
+  }
+
+  <span class="comment">// 3. Remove o cookie do navegador</span>
+  res.clearCookie(<span class="string">'jwt'</span>);
+  res.json({ message: <span class="string">'Logout efetuado com sucesso.'</span> });
+};</code></pre>
+
+        <ul class="points">
+          <li><strong>O Fluxo de Logout</strong> (<code>controllers/authController.js</code>):
+            <ul>
+              <li>1. Registra a auditoria.</li>
+              <li>2. Adiciona o token à <code>token_blacklist</code>.</li>
+              <li>3. Remove o cookie do navegador.</li>
+            </ul>
+          </li>
+          <li><strong>A Verificação</strong> (<code>middlewares/authMiddleware.js</code>):
+            <ul>
+              <li>Antes de <em>qualquer</em> requisição protegida, o sistema consulta a blacklist.</li>
+              <li>Se o token estiver na blacklist, o middleware aborta e retorna <strong>HTTP 401</strong>.</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+    </div>
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Pilar 2</p>
+        <h2 class="slide-title">Autorização e Controle de Acesso</h2>
+        <div class="checklist-grid">
+          <div class="cl-row">
+            <div class="cl-title">1. Ativo Crítico</div>
+            <div class="cl-content">Histórico de chamados e ações sistêmicas.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">2. Risco Principal</div>
+            <div class="cl-content">Acesso indevido (IDOR) e escalonamento de privilégios.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">3. Controle Adotado</div>
+            <div class="cl-content">Middleware RBAC e filtros de query pelo proprietário.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">4. Evidência no Código</div>
+            <div class="cl-content"><code>rbacMiddleware.js</code> e <code>ticket.controller.js</code>.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">5. Logs Necessários</div>
+            <div class="cl-content">Ações do Admin e atualizações em chamados.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">6. Vulnerabilidade</div>
+            <div class="cl-content">A validação impede no frontend, mas Admin pode excluir a própria conta na API.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">7. Incidente (Ação)</div>
+            <div class="cl-content">Identificar via log a extensão da invasão e bloquear acesso.</div>
+          </div>
+          <div class="cl-row">
+            <div class="cl-title">8. Recuperação</div>
+            <div class="cl-content">Restaurar os registros alterados indevidamente via backup.</div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+    </div>
+
+    <div class="slide">
+
+      <div class="inner">
+        <p class="eyebrow">Evidência: Pilar 2</p>
+        <h2 class="slide-title">RBAC (Role-Based Access Control)</h2>
+        <p class="lead"><strong>Arquivo principal:</strong> <code>middlewares/rbacMiddleware.js</code> (função
+          <code>requireRole()</code>)
+        </p>
+        <pre class="code-block" style="margin-top: 1rem;"><code><span class="keyword">export const</span> requireRole = (roles) => {
+  <span class="keyword">return</span> (req, res, next) => {
+    <span class="keyword">if</span> (!req.user || !roles.includes(req.user.role)) {
+      <span class="keyword">return</span> res.status(<span class="highlight">403</span>).json({ message: <span class="string">'Acesso negado. Perfil sem permissão.'</span> });
+    }
+    next();
+  };
+};</code></pre>
+        <ul class="points">
+          <li>Acesso interceptado: Caso o perfil não tenha permissão, a API retorna <strong>403 Forbidden</strong>.</li>
+          <li><strong>Onde é utilizado:</strong>
+            <ul>
+              <li><code>routes/users.js</code></li>
+              <li><code>routes/tickets.js</code></li>
+              <li><code>routes/audit.js</code></li>
+            </ul>
+          </li>
+        </ul>
+        <div class="callout" style="margin-top: 1.5rem; padding: 1rem;">
+          <strong>Demonstração Prática (Isolamento via API):</strong> O Postman prova que a validação não está apenas no
+          frontend (React).
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+  <div class="slide">
+    <div class="inner" style="max-width: 1400px;">
+      <p class="eyebrow">Demonstração Prática</p>
+      <h2 class="slide-title">Teste de Acesso (Postman)</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+
+        <div>
+          <span
+            style="display: block; font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary);">1.
+            Login Admin (Retorna 200 OK e Token)</span>
+          <img decoding="async" loading="eager" src="assets/login_admin.png" alt="Login Admin"
+            style="width: 100%; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
+        </div>
+
+        <div>
+          <span
+            style="display: block; font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary);">2.
+            Login Solicitante (Retorna 200 OK e Token)</span>
+          <img decoding="async" loading="eager" src="assets/login_solicitante.png" alt="Login Solicitante"
+            style="width: 100%; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
+        </div>
+
+        <div>
+          <span
+            style="display: block; font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary);">3.
+            Admin acessa /api/users (Retorna 200 OK)</span>
+          <img decoding="async" loading="eager" src="assets/get_users_admin_200.png" alt="GET Users Admin 200"
+            style="width: 100%; border-radius: 8px; border: 2px solid #2a9d8f; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
+        </div>
+
+        <div>
+          <span
+            style="display: block; font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary-light);">4.
+            Solicitante acessa /api/users (Retorna 403 Forbidden)</span>
+          <img decoding="async" loading="eager" src="assets/get_users_403.png" alt="GET Users 403"
+            style="width: 100%; border-radius: 8px; border: 2px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
+        </div>
+
+      </div>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+
+
+  <div class="slide">
+
+    <div class="inner">
+      <p class="eyebrow">Evidência: Pilar 2</p>
+      <h2 class="slide-title">Isolamento por Proprietário (Anti-IDOR)</h2>
+      <p class="lead"><strong>Arquivo:</strong> <code>controllers/ticketController.js</code></p>
+      <pre class="code-block" style="margin-top: 1rem;"><code><span class="keyword">let</span> query = <span class="string">'SELECT * FROM tickets t'</span>;
+<span class="keyword">const</span> params = [];
+
+<span class="keyword">if</span> (req.user.role === <span class="string">'solicitante'</span>) {
+  query += <span class="string">' WHERE t.requester_id = ?'</span>;
+  params.push(req.user.id); <span class="comment">// 👈 Extrai o ID direto do Token (Seguro)</span>
+} <span class="keyword">else if</span> (req.user.role === <span class="string">'tecnico'</span>) {
+  query += <span class="string">' WHERE t.assigned_to = ?'</span>;
+  params.push(req.user.id);
+}</code></pre>
+      <ul class="points">
+        <li><strong>Visualização:</strong>
+          <ul>
+            <li><em>Solicitante:</em> vê apenas seus chamados.</li>
+            <li><em>Técnico:</em> vê apenas os chamados atribuídos a ele.</li>
+            <li><em>Admin:</em> vê todos.</li>
+          </ul>
+        </li>
+        <li><strong>Atualização e Cancelamento:</strong>
+          <ul>
+            <li>Solicitante não pode atualizar dados técnicos, apenas o Técnico atribuído.</li>
+            <li>Cancelamento: Somente o proprietário do chamado pode cancelar.</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+  <div class="slide">
+
+    <div class="inner">
+      <p class="eyebrow">Evidência: Pilar 2</p>
+      <h2 class="slide-title">Segurança de Entradas: Validação e SQLi</h2>
+      <pre class="code-block"
+        style="margin-top: 1rem; margin-bottom: 1rem;"><code><span class="comment">// 1. Zod (middlewares/validateMiddleware.js) barrando sujeira</span>
+<span class="keyword">export const</span> validate = (schema) => (req, res, next) => {
+  <span class="keyword">try</span> {
+    schema.parse(req.body);
+    next();
+  } <span class="keyword">catch</span> (err) {
+    res.status(<span class="highlight">400</span>).json({ message: err.errors });
+  }
+};
+
+<span class="comment">// 2. Parameterized Query (NUNCA concatenamos strings!)</span>
+<span class="keyword">const</span> [rows] = <span class="keyword">await</span> pool.query(<span class="string">'SELECT * FROM users WHERE email = ?'</span>, [email]);</code></pre>
+      <ul class="points">
+        <li><strong>Validação Autorizada (Zod):</strong>
+          <ul>
+            <li><code>middlewares/validateMiddleware.js</code> utiliza a biblioteca Zod para validar tudo o que entra.
+              Em caso de payload inválido, a API corta a requisição com <strong>HTTP 400</strong>.</li>
+          </ul>
+        </li>
+        <li><strong>Prevenção de SQL Injection:</strong>
+          <ul>
+            <li>Todas as consultas no código utilizam Prepared Statements (ex:
+              <code>pool.query('SELECT * FROM users WHERE email = ?', [email])</code>). Os dados nunca são
+              concatenados no SQL.
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+  <div class="slide">
+
+    <div class="inner">
+      <p class="eyebrow">Pilar 3</p>
+      <h2 class="slide-title">Auditoria, Monitoramento e Defesa</h2>
+      <div class="checklist-grid">
+        <div class="cl-row">
+          <div class="cl-title">1. Ativo Crítico</div>
+          <div class="cl-content">A integridade dos Logs e a disponibilidade do serviço.</div>
+        </div>
+        <div class="cl-row">
+          <div class="cl-title">2. Risco Principal</div>
+          <div class="cl-content">Apagamento de rastros e ataques de Negação (DDoS / Brute Force).</div>
+        </div>
+        <div class="cl-row">
+          <div class="cl-title">3. Controle Adotado</div>
+          <div class="cl-content">Trilha com <code>logAudit()</code>; Rate Limit, Helmet e XSS-Clean.</div>
+        </div>
+        <div class="cl-row">
+          <div class="cl-title">4. Evidência no Código</div>
+          <div class="cl-content"><code>auditMiddleware.js</code> e blindagem principal em <code>server.js</code>.
+          </div>
+        </div>
+        <div class="cl-row">
+          <div class="cl-title">5. Logs Necessários</div>
+          <div class="cl-content">Ações destrutivas. Limitação: falhas de login NÃO geram logs.</div>
+        </div>
+        <div class="cl-row">
+          <div class="cl-title">6. Vulnerabilidade</div>
+          <div class="cl-content">Os logs estão no próprio banco de dados da aplicação (risco central).</div>
+        </div>
+        <div class="cl-row">
+          <div class="cl-title">7. Incidente (Ação)</div>
+          <div class="cl-content">Não alterar nada. Fazer dump pericial dos logs imediatamente.</div>
+        </div>
+        <div class="cl-row">
+          <div class="cl-title">8. Recuperação</div>
+          <div class="cl-content">Backup rotineiro (que ainda não está implementado).</div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+  <div class="slide">
+
+    <div class="inner">
+      <p class="eyebrow">Evidência: Pilar 3</p>
+      <h2 class="slide-title">Trilha de Auditoria e Limitações</h2>
+      <p class="lead"><strong>Arquivo:</strong> <code>middlewares/auditMiddleware.js</code> (função
+        <code>logAudit()</code>)
+      </p>
+      <pre class="code-block" style="margin-top: 1rem; margin-bottom: 1rem;"><code><span class="keyword">export const</span> logAudit = <span class="keyword">async</span> (userId, action, details, ipAddress) => {
+  <span class="keyword">try</span> {
+    <span class="keyword">await</span> pool.query(
+      <span class="string">'INSERT INTO audit_logs (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)'</span>,
+      [userId, action, details, ipAddress]
+    );
+  } <span class="keyword">catch</span> (error) {
+    console.error(<span class="string">'Falha ao registrar auditoria:'</span>, error);
+  }
+};</code></pre>
+      <ul class="points">
+        <li><strong>Informações Registradas:</strong> usuário (id), ação, detalhes (ex: email alterado), IP e Data.
+        </li>
+        <li><strong>Eventos Suportados:</strong> login, logout, create_user, update_user, delete_user, change_status,
+          delete_ticket.</li>
+        <li><strong>Transparência no Log:</strong>
+          <ul>
+            <li>Senhas <strong>nunca</strong> são registradas no log (apenas ID e e-mail).</li>
+            <li><em>Limitação Conhecida:</em> Falhas de login (senha incorreta) não estão sendo auditadas no banco.
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+  <div class="slide">
+    <div class="inner" style="max-width: 1400px; text-align: center;">
+      <p class="eyebrow" style="justify-content: center;">Evidência: Pilar 3</p>
+      <h2 class="slide-title" style="text-align: center;">A Prova no Banco: Audit Logs</h2>
+      <img decoding="async" loading="eager" src="assets/log_evidence.png" alt="Evidência de Logs no BD"
+        style="width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 6px 15px rgba(0,0,0,0.2); margin-top: 1rem;" />
+      <p class="lead" style="margin-top: 1rem;">O banco de dados comprova que o sistema registra o IP (De onde?), Ação
+        (O que?) e Usuário (Quem?) com timestamp automático (Quando?).</p>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+
+
+  <div class="slide">
+
+    <div class="inner">
+      <p class="eyebrow">Evidência: Pilar 3</p>
+      <h2 class="slide-title">Camadas Adicionais de Defesa</h2>
+      <p class="lead"><strong>Arquivo:</strong> <code>server.js</code></p>
+      <pre class="code-block" style="margin-top: 1rem; margin-bottom: 1rem;"><code><span class="comment">// Limpeza XSS (Cross-Site Scripting)</span>
+app.use(xss());
+
+<span class="comment">// Helmet (Proteção de cabeçalhos)</span>
+app.use(helmet());
+
+<span class="comment">// Rate Limit para Login (Mitiga Força Bruta)</span>
+<span class="keyword">const</span> loginLimiter = rateLimit({
+  windowMs: <span class="highlight">15</span> * <span class="highlight">60</span> * <span class="highlight">1000</span>, <span class="comment">// 15 minutos</span>
+  max: <span class="highlight">5</span>,                   <span class="comment">// bloqueia no 5º erro</span>
+  message: <span class="string">'Muitas tentativas. Bloqueado.'</span>
+});
+app.use(<span class="string">'/api/auth/login'</span>, loginLimiter);</code></pre>
+      <ul class="points">
+        <li><strong>Proteções Ativas:</strong>
+          <ul>
+            <li><code>Helmet</code>: remove headers sensíveis e protege contra sniff.</li>
+            <li><code>xss()</code>: limpa inputs maliciosos protegendo contra Cross-Site Scripting.</li>
+            <li><code>CORS</code>: restringe o consumo apenas à origem autorizada.</li>
+          </ul>
+        </li>
+        <li><strong>Rate Limit:</strong>
+          <ul>
+            <li>Geral da API: 100 requisições a cada 15 minutos.</li>
+            <li>Rota de Login: Apenas <strong>5 tentativas por IP</strong> a cada 15 minutos.</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+  <div class="slide">
+
+    <div class="inner">
+      <p class="eyebrow">Vulnerabilidades</p>
+      <h2 class="slide-title">Ameaças e Resposta a Incidentes</h2>
+
+      <div class="info-grid" style="grid-template-columns: 1fr 1fr; align-items: start; margin-bottom: 1rem;">
+        <div class="info-item" style="border-color: #e76f51; padding: 1rem;">
+          <h3 style="color: #e76f51; margin-top: 0;">Principal Vulnerabilidade: JWT_SECRET Fraco</h3>
+          <p style="margin-bottom: 0.5rem;">O segredo usado permite <strong>falsificação de tokens</strong>. Um atacante
+            não precisa roubar senhas do banco para se tornar administrador.</p>
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <div style="flex: 1;">
+              <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.3rem;">.env.example (Recomendado)</p>
+              <pre class="code-block"
+                style="margin:0; padding: 0.5rem; font-size: 0.8rem;"><code>JWT_SECRET=super_secret_key_change_me</code></pre>
+            </div>
+            <div style="flex: 1;">
+              <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.3rem; color: #e76f51;">.env local (Atual)
+              </p>
+              <pre class="code-block"
+                style="margin:0; padding: 0.5rem; font-size: 0.8rem; border-color: #e76f51;"><code>JWT_SECRET=123456</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="info-item" style="padding: 1rem;">
+          <h3 style="margin-top: 0;">Fluxo de Resposta a Incidentes</h3>
+          <ul class="points" style="margin-top: 0.5rem;">
+            <li><strong>1. Detectar</strong>: Investigar <code>audit_logs</code>.</li>
+            <li><strong>2. Conter</strong>: Adicionar os tokens suspeitos na <code>token_blacklist</code>.</li>
+            <li><strong>3. Preservar</strong>: <strong>NÃO</strong> apagar ou alterar os registros do banco (Evidência
+              Pericial).</li>
+            <li><strong>4. Erradicar e Recuperar</strong>: Alterar o JWT_SECRET imediatamente.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="left">GIRA · Arquitetura e Código</span></div>
+  </div>
+
+  <div class="slide">
+
+    <div class="inner">
+      <p class="eyebrow">Fechamento</p>
+      <h2 class="slide-title">Alinhamento ao NIST e Melhorias</h2>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div
+          style="background: rgba(42, 157, 143, 0.1); border: 2px solid var(--primary); padding: 1rem; border-radius: 8px; text-align: center;">
+          <h3 style="color: var(--primary); margin-top: 0;">1. Proteger</h3>
+          <p style="font-size: 0.9rem;">Bcrypt, RBAC, Helmet, Zod, HttpOnly, Rate Limit.</p>
+          <span style="font-weight: bold; color: var(--primary);">✔ Atendido</span>
+        </div>
+        <div
+          style="background: rgba(233, 196, 106, 0.1); border: 2px solid #e9c46a; padding: 1rem; border-radius: 8px; text-align: center;">
+          <h3 style="color: #e9c46a; margin-top: 0;">2. Detectar</h3>
+          <p style="font-size: 0.9rem;"><code>audit_logs</code> registra sucessos, mas ignora falhas de login.</p>
+          <span style="font-weight: bold; color: #e9c46a;">⚠ Parcial</span>
+        </div>
+        <div
+          style="background: rgba(42, 157, 143, 0.1); border: 2px solid var(--primary); padding: 1rem; border-radius: 8px; text-align: center;">
+          <h3 style="color: var(--primary); margin-top: 0;">3. Responder</h3>
+          <p style="font-size: 0.9rem;"><code>token_blacklist</code> permite revogação de acessos na hora.</p>
+          <span style="font-weight: bold; color: var(--primary);">✔ Atendido</span>
+        </div>
+        <div
+          style="background: rgba(231, 111, 81, 0.1); border: 2px solid #e76f51; padding: 1rem; border-radius: 8px; text-align: center;">
+          <h3 style="color: #e76f51; margin-top: 0;">4. Recuperar</h3>
+          <p style="font-size: 0.9rem;">Não existem rotinas ou scripts de backup de dados no sistema.</p>
+          <span style="font-weight: bold; color: #e76f51;">✖ Não Conforme</span>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 0.5rem;">Roadmap de Melhorias (Curto Prazo)</h3>
+      <ul class="points" style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+        <li>Fortalecer o <code>JWT_SECRET</code> em produção.</li>
+        <li>Adicionar registro de <em>Falhas de Login</em> na Auditoria.</li>
+        <li>Criar disparo de alertas para anomalias.</li>
+        <li>Implementar script de <strong>Backup Automático</strong> (cronjob).</li>
+      </ul>
+      <div class="foot"><span class="left">GIRA · Arquitetura e Código</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    const progress = document.getElementById('progress');
+    let current = 0;
+
+    function updateUI() {
+      if (progress) progress.style.width = ((current + 1) / total * 100) + '%';
+
+    }
+
+    function goTo(index) {
+      if (index < 0 || index >= total || index === current) return;
+      current = index;
+      slides.forEach((s, i) => s.classList.toggle('active', i === current));
+      updateUI();
+    }
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+      if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+      if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+    });
+
+    updateUI();
+  </script>
+</body>
+
+</html>
